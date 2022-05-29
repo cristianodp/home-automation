@@ -1,0 +1,79 @@
+version: '2.4'
+services:
+  
+  traefik:
+    image: "traefik:v2.5"
+    container_name: "traefik"
+    command:
+      #- "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entryPoints.web-secure.address=:443"
+      - "--entrypoints.dns.address=:53/tcp"
+      - "--entrypoints.dns-udp.address=:53/udp"
+      - "--entrypoints.ws-deconz.address=:8088/tcp"
+      - "--entrypoints.ws-deconz-udp.address=:8088/udp"
+      - "--entryPoints.web.forwardedHeaders.trustedIPs=127.0.0.1/32,192.168.3.241"
+      - "--entryPoints.web.proxyProtocol.trustedIPs=127.0.0.1/32,192.168.3.241"
+      - "--certificatesResolvers.primary.acme.email=info@4o4-app.eu"
+      - "--certificatesResolvers.primary.acme.storage=acme.json"
+      - "--certificatesResolvers.primary.acme.dnsChallenge=true"
+      - "--certificatesResolvers.primary.acme.dnsChallenge.provider=cloudflare"
+      - "--certificatesResolvers.primary.acme.dnsChallenge.delayBeforeCheck=0"
+    ports:
+      - 80:80
+      - 443:443
+      - 53:53/udp
+      - 53:53/tcp
+      - 8080:8080
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - ./config/acme.json:/acme.json
+    labels:
+      - "traefik.enable=true"
+
+      - "traefik.http.routers.traefik.rule=Host(`traefik.internal.4o4-app.eu`)"
+      - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+      - "traefik.http.routers.traefik.entrypoints=web-secure"
+      - "traefik.http.routers.traefik.tls.certResolver=primary"
+
+
+      - "traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.traefik.middlewares=traefik-https-redirect"
+      - traefik.http.routers.http_catchall.rule=HostRegexp(`{any:.+}`)
+      - traefik.http.routers.http_catchall.entrypoints=web
+      - traefik.http.routers.http_catchall.middlewares=traefik-https-redirect
+     
+       # wildcard certs
+      - "traefik.http.routers.traefik.tls.domains[0].main=internal.4o4-app.eu"
+      - "traefik.http.routers.traefik.tls.domains[0].sans=*.internal.4o4-app.eu"
+    environment:
+      CF_API_EMAIL: ${CLOUDFLARE_EMAIL}
+      CF_API_KEY: ${CLOUDFLARE_API_KEY}
+      # CF_DNS_API_TOKEN: "${CF_DNS_API_TOKEN}"
+      # CF_ZONE_API_TOKEN: "${CF_ZONE_API_TOKEN}"
+      # CLOUDFLARE_API_KEY: "${CLOUDFLARE_API_KEY}"
+      # CLOUDFLARE_DNS_API_TOKEN: ${CLOUDFLARE_DNS_API_TOKEN}"
+      # CLOUDFLARE_ZONE_API_TOKEN: ${CLOUDFLARE_ZONE_API_TOKEN}"
+      PUID: 1026
+      PGID: 100
+    networks:
+      macvlan_network:
+        ipv4_address: 192.168.3.241
+
+networks:
+  macvlan_network:
+    external: true
+    
+# networks:
+#   macvlan_network:
+#     driver: macvlan
+#     driver_opts:
+#       parent: eth0
+#     ipam:
+#       config:
+#         - subnet: "192.168.3.0/24"
+#           ip_range: "192.168.3.240/28"
+#           gateway: "192.168.3.1" 

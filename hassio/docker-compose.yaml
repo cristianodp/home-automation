@@ -1,0 +1,34 @@
+version: '2.4'
+services:
+  hassio:
+    container_name: hassio
+    image: "ghcr.io/home-assistant/raspberrypi4-homeassistant:stable"
+    volumes:
+      - ./scripts:/scripts
+      - ./shared:/shared
+      - ./config:/config
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+    # privileged: true
+    devices:
+      - /dev/ttyACM0:/dev/ttyACM0
+    ports:
+      - 8123:8123
+    expose:
+      - 8123
+    networks:
+      macvlan_network:
+        ipv4_address: 192.168.3.246  
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.hassio.rule=Host(`hassio.internal.4o4-app.eu`)"
+      - "traefik.http.services.hassio.loadbalancer.server.port=8123"
+      - "traefik.http.routers.hassio.entrypoints=web-secure"
+      - "traefik.http.routers.hassio.tls.certResolver=primary"
+      # - "traefik.http.routers.hassio.whiteList.useXForwardedFor=true"
+
+
+networks:
+  macvlan_network:
+    external: true

@@ -1,0 +1,49 @@
+version: '2.4'
+services:
+  
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "67:67/udp"
+      - "80:80/tcp"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./config/etc-pihole/:/etc/pihole/
+      - ./config/etc-dnsmasq.d/:/etc/dnsmasq.d/
+    environment:
+      TZ: 'Europe/Berlin'
+      WEBPASSWORD: ${PIHOLE_WEB_PASSWORD}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pihole.rule=Host(`pihole.internal.4o4-app.eu`)"
+      - "traefik.http.services.pihole.loadbalancer.server.port=80"
+      - "traefik.http.routers.pihole.entrypoints=web-secure"
+      - "traefik.http.routers.pihole.tls.certResolver=primary"
+
+      - "traefik.tcp.services.pihole.loadbalancer.server.port=53"
+      - "traefik.udp.routers.dns-udp.entrypoints=dns-udp"
+      - "traefik.udp.routers.dns-udp.service=pihole"
+      - "traefik.udp.services.pihole.loadbalancer.server.port=53"
+
+      # # 53/udp
+      # - "traefik.udp.routers.53-udp.entrypoints=53-udp"
+      # - "traefik.udp.routers.53-udp.service=pihole-53-udp"
+      # - "traefik.udp.services.pihole-53-udp.loadbalancer.server.port=53"
+      # # 53/tcp
+      # - "traefik.tcp.routers.53-tcp.rule=HostSNI(`*`)"
+      # - "traefik.tcp.routers.53-tcp.entrypoints=53-tcp"
+      # - "traefik.tcp.routers.53-tcp.service=pihole-53-tcp"
+      # - "traefik.tcp.services.pihole-53-tcp.loadbalancer.server.port=53"
+    networks:
+      macvlan_network:
+        ipv4_address: 192.168.3.240
+
+networks:
+  macvlan_network:
+    external: true

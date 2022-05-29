@@ -1,0 +1,56 @@
+version: '2.4'
+services:
+  
+  deconz:
+    container_name: deconz
+    image: marthoc/deconz
+    restart: unless-stopped
+    # network_mode: host
+    environment:
+      # You can access Deconz at this port
+      DECONZ_WEB_PORT: 80
+      DECONZ_WS_PORT: 8088
+      DECONZ_VNC_PASSWORD: "${VNC_PASSWORD}"
+      # Set VNC_MODE to 0 to disable it completely
+      DECONZ_VNC_MODE: 1
+      DECONZ_VNC_PORT: 5900
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      # Replace <local path> with a path where all deconz config will be stored.
+      - ./config:/root/.local/share/dresden-elektronik/deCONZ
+    ports:
+      - 80:80  
+      - 8088:8088  
+    networks:
+      macvlan_network:
+        ipv4_address: 192.168.3.245
+    devices:
+      - /dev/ttyACM0
+    labels:
+      - "traefik.enable=true"
+      # https and reverse
+      - "traefik.http.routers.deconz.rule=Host(`deconz.internal.4o4-app.eu`)"
+      - "traefik.http.services.deconz.loadbalancer.server.port=80"
+      - "traefik.http.routers.deconz.entrypoints=web-secure"
+      - "traefik.http.routers.deconz.tls.certResolver=primary"
+      # udp ws
+            
+      # - "traefik.http.routers.deconz-wss.rule=Host(`deconz.internal.4o4-app.eu`)"
+      # - "traefik.http.routers.deconz-wss.entrypoints=wss_ssl"
+      # - "traefik.http.routers.deconz-wss.tls=true"
+      # - "traefik.http.routers.deconz-wss.tls.certresolver=leresolver"
+      # - "traefik.http.routers.deconz-wss.middlewares=secureheaders"
+      # - "traefik.http.routers.deconz-wss.service=deconz-wss"
+      # - "traefik.http.services.deconz-wss.loadbalancer.server.port=8088"
+
+
+
+      - "traefik.tcp.services.deconz.loadbalancer.server.port=8088"
+      - "traefik.udp.routers.ws-deconz-udp.entrypoints=ws-deconz-udp"
+      - "traefik.udp.routers.ws-deconz-udp.service=deconz"
+      - "traefik.udp.services.deconz.loadbalancer.server.port=8088"
+
+networks:
+  macvlan_network:
+    external: true
