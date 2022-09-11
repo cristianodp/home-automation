@@ -24,7 +24,7 @@ services:
       - 8088:8088  
     networks:
       macvlan_network:
-        ipv4_address: 192.168.3.245
+        ipv4_address: 192.168.2.245
     devices:
       - /dev/ttyACM0
     labels:

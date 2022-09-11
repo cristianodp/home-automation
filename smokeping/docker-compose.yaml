@@ -20,7 +20,7 @@ services:
       - "traefik.http.routers.smokeping.tls.certResolver=primary"
     networks:
       macvlan_network:
-        ipv4_address: 192.168.3.243
+        ipv4_address: 192.168.2.243
 
 networks:
   macvlan_network:

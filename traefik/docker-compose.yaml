@@ -15,8 +15,8 @@ services:
       - "--entrypoints.dns-udp.address=:53/udp"
       - "--entrypoints.ws-deconz.address=:8088/tcp"
       - "--entrypoints.ws-deconz-udp.address=:8088/udp"
-      - "--entryPoints.web.forwardedHeaders.trustedIPs=127.0.0.1/32,192.168.3.241"
-      - "--entryPoints.web.proxyProtocol.trustedIPs=127.0.0.1/32,192.168.3.241"
+      - "--entryPoints.web.forwardedHeaders.trustedIPs=127.0.0.1/32,192.168.2.241"
+      - "--entryPoints.web.proxyProtocol.trustedIPs=127.0.0.1/32,192.168.2.241"
       - "--certificatesResolvers.primary.acme.email=info@4o4-app.eu"
       - "--certificatesresolvers.primary.acme.storage=/letsencrypt/acme.json"
       - "--certificatesResolvers.primary.acme.dnsChallenge=true"
@@ -61,7 +61,7 @@ services:
       PGID: 100
     networks:
       macvlan_network:
-        ipv4_address: 192.168.3.241
+        ipv4_address: 192.168.2.241
 
 networks:
   macvlan_network:
@@ -74,6 +74,6 @@ networks:
 #       parent: eth0
 #     ipam:
 #       config:
-#         - subnet: "192.168.3.0/24"
-#           ip_range: "192.168.3.240/28"
-#           gateway: "192.168.3.1" 
+#         - subnet: "192.168.2.0/24"
+#           ip_range: "192.168.2.240/28"
+#           gateway: "192.168.2.1" 

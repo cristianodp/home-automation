@@ -30,7 +30,7 @@ services:
       - "traefik.http.routers.netdata.tls.certResolver=primary"
     networks:
       macvlan_network:
-        ipv4_address: 192.168.3.244
+        ipv4_address: 192.168.2.244
         
 volumes:
   netdataconfig:

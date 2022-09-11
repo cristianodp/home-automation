@@ -18,7 +18,7 @@ services:
       - 8123
     networks:
       macvlan_network:
-        ipv4_address: 192.168.3.246  
+        ipv4_address: 192.168.2.246  
 
     labels:
       - "traefik.enable=true"
